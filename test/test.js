@@ -19,10 +19,16 @@ var Server = require('../index');
 var soapClient = new Client();
 var soapServer = new Server();
 
-// Start soap Server
-soapServer.run();
-
 describe('Soap Client', function() {
+
+    before(function() {
+        soapServer.run();
+    });
+
+    after(function(done) {
+        soapServer.close(done);
+    })
+
     it('should start without error', function(done) {
         soapClient.createClient(function(err) {
             if (err) { done(err); }
