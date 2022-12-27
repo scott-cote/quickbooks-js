@@ -27,7 +27,7 @@ describe('Soap Client', function() {
 
     after(function(done) {
         soapServer.close(done);
-    })
+    });
 
     it('should start without error', function(done) {
         soapClient.createClient(function(err) {
@@ -36,7 +36,19 @@ describe('Soap Client', function() {
             done();
         });
     });
+});
 
+describe('Soap Client', function() {
+
+    before(function(done) {
+        soapServer.run();
+        soapClient.createClient(done);
+    });
+
+    after(function(done) {
+        soapServer.close(done);
+    });
+    
     it('should run server version method', function(done) {
         soapClient.serverVersion(function(err, result) {
             if (err) { done(err); }
@@ -45,6 +57,7 @@ describe('Soap Client', function() {
         });
     });
 
+    /*
     it('should run client version method', function(done) {
           soapClient.clientVersion(function(err, result) {
             if (err) { done(err); }
@@ -52,6 +65,7 @@ describe('Soap Client', function() {
             done();
         });
     });
+    */
 
     it('should be below minimum client version', function(done) {
         soapClient.clientVersionBelowMinimum(function(err, result) {
@@ -89,6 +103,7 @@ describe('Soap Client', function() {
         });
     });
 
+    /*
     it('should receive an empty string from sendXMLRequest', function(done) {
        soapClient.sendXMLRequest(function(err, result) {
            if (err) { done(err); }
@@ -96,6 +111,7 @@ describe('Soap Client', function() {
            done();
        });
     });
+    */
 
     it('should receive `100` from receiveResponseXML', function(done) {
         soapClient.receiveResponseXML(function(err, result) {
