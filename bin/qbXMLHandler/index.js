@@ -13,7 +13,7 @@
 
 var data2xml = require('data2xml');
 var convert = data2xml({
-        xmlHeader: '<?xml version="1.0" encoding="utf-8"?>\n<?qbxml version="13.0"?>\n'
+        xmlHeader: '<?xml version="1.0" encoding="utf-8"?>\n<?qbxml version="16.0"?>\n'
     });
 
 // Public
@@ -57,8 +57,9 @@ function buildRequests(callback) {
         {
             QBXMLMsgsRq : {
                 _attr : { onError : 'stopOnError' },
-                ItemInventoryQueryRq : {
-                    MaxReturned: 1000,
+                CustomerQueryRq : {
+                    _attr: { iterator: "Start" },
+                    MaxReturned: 2,
                 },
             },
         }
