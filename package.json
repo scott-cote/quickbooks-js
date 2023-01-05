@@ -26,7 +26,8 @@
     "data2xml": "^1.2.5",
     "node-uuid": "^1.4.8",
     "semver": "^7.3.8",
-    "soap": "^1.0.0"
+    "soap": "^1.0.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "chai": "^4.3.7",

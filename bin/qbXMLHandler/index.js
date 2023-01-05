@@ -25,7 +25,7 @@ module.exports = {
     authenticate: async function(username, password) {
         if (username === 'username' && password === 'password') {
             let ticketId = uuid.v1();
-            ticketMap.set(ticketId, { ticketId });
+            ticketMap.set(ticketId, { ticketId, state: 'idle' });
             //return { ticketId, companyFilePath: 'C:\\Users\Public\\Documents\\Intuit\\QuickBooks\\Company Files\\Scott Cote.qbw' }
             return { ticketId, companyFilePath: '' }
         } else {
@@ -49,22 +49,80 @@ module.exports = {
 
     generateRequest: async function(ticketId) {
         let ticket = ticketMap.get(ticketId);
-        if (ticket.done) {
-            return '';
-        } else {
-            ticket.done = true;
-            return convert(
-                'QBXML',
-                {
-                    QBXMLMsgsRq : {
-                        _attr : { onError : 'stopOnError' },
-                        CustomerQueryRq : {
-                            _attr: { iterator: "Start" },
-                            MaxReturned: 2,
+        switch (ticket.state) {
+            case ('idle'):
+            {
+                ticket.iteratorReadCount = 0;
+                ticket.state = 'reading';
+                //console.log('sending start');
+                return convert(
+                    'QBXML',
+                    {
+                        QBXMLMsgsRq : {
+                            _attr : { onError : 'stopOnError' },
+                            CustomerQueryRq : {
+                                _attr: { iterator: "Start" },
+                                MaxReturned: 2,
+                            },
                         },
-                    },
+                    }
+                );
+            }
+            case ('writing'):
+            {
+                ticket.state = 'reading';
+                //console.log('sending continue');
+                return convert(
+                    'QBXML',
+                    {
+                        QBXMLMsgsRq : {
+                            _attr : { onError : 'stopOnError' },
+                            CustomerQueryRq : {
+                                _attr: { iteratorID: ticket.iteratorId, iterator: "Continue" },
+                                MaxReturned: 2,
+                            },
+                        },
+                    }
+                );
+            }
+            default:
+            {
+                console.log('generateRequest unexpected state: Sending empty');
+                return '';
+            }
+        }
+    },
+
+    processResponse: async function(ticketId, response) {
+        //console.log('processResponse');
+        let ticket = ticketMap.get(ticketId);
+        switch (ticket.state) {
+            case ('reading'):
+            {
+                //console.log('reading');
+                let metadata = response.QBXML.QBXMLMsgsRs[0].CustomerQueryRs[0].$;
+                let data = response.QBXML.QBXMLMsgsRs[0].CustomerQueryRs[0].CustomerRet;
+                // NOTE: Add checks for metadata status.
+                //console.log(JSON.stringify(metadata));
+                //console.log(data);
+                let remainingCount = parseInt(metadata.iteratorRemainingCount);
+                if (remainingCount > 0) {
+                    ticket.iteratorId = metadata.iteratorID;
+                    ticket.iteratorReadCount += data.length;
+                    ticket.state = 'writing';
+                    let progress = Math.floor(100 * (ticket.iteratorReadCount / (ticket.iteratorReadCount + remainingCount)));
+                    //console.log('progress: '+progress);
+                    return progress;
+                } else {
+                    // can return 99 if there is another operation
+                    return 100;
                 }
-            );
+            }
+            default: 
+            {
+                console.log('processResponse unexpected state');
+                return 100;
+            }
         }
     },
 
