@@ -26,6 +26,7 @@ module.exports = {
         if (username === 'username' && password === 'password') {
             let ticketId = uuid.v1();
             ticketMap.set(ticketId, { ticketId });
+            //return { ticketId, companyFilePath: 'C:\\Users\Public\\Documents\\Intuit\\QuickBooks\\Company Files\\Scott Cote.qbw' }
             return { ticketId, companyFilePath: '' }
         } else {
            throw new Error('Invalid username or password.');
@@ -42,7 +43,29 @@ module.exports = {
     },
 
     getError: async function(ticketId) {
-        return ticketMap.get(ticketId)
+        let ticket = ticketMap.get(ticketId);
+        return ticket ? ticket.error : undefined;
+    },
+
+    generateRequest: async function(ticketId) {
+        let ticket = ticketMap.get(ticketId);
+        if (ticket.done) {
+            return '';
+        } else {
+            ticket.done = true;
+            return convert(
+                'QBXML',
+                {
+                    QBXMLMsgsRq : {
+                        _attr : { onError : 'stopOnError' },
+                        CustomerQueryRq : {
+                            _attr: { iterator: "Start" },
+                            MaxReturned: 2,
+                        },
+                    },
+                }
+            );
+        }
     },
 
     /**
@@ -99,7 +122,10 @@ module.exports = {
         return 50;
     },
 
-    closeTicket: async function(ticketId) {
+    closeTicket: async function(ticketId, message, hresult) {
+        if (message) {
+            console.log('QBWC reported error: ' + message);
+        }
         ticketMap.delete(ticketId);
     }
 };
