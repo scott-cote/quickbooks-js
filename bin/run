@@ -3,5 +3,24 @@
 var QuickbooksServer = require('../index');
 var quickbooksServer = new QuickbooksServer();
 var qbXMLHandler = require('./qbXMLHandler');
+
+/**
+ * Node.js' HTTP Library
+ *
+ * https://nodejs.org/dist/latest-v6.x/docs/api/http.html
+ */
+ var http = require('http');
+/**
+ * An HTTP server that will be used
+ * to listen for SOAP requests.
+ */
+ var server = http.createServer(function(req, res) {
+    res.end('404: Not Found: ' + req.url);
+});
+
+var port = process.env.QB_SOAP_PORT || 8000;
+
+//server.listen(port);
 quickbooksServer.setQBXMLHandler(qbXMLHandler);
-quickbooksServer.run();
+quickbooksServer.run(server);
+server.listen(port);
