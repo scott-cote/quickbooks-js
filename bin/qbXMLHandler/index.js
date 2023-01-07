@@ -26,8 +26,7 @@ module.exports = {
         if (username === 'username' && password === 'password') {
             let ticketId = uuid.v1();
             ticketMap.set(ticketId, { ticketId, state: 'idle' });
-            //return { ticketId, companyFilePath: 'C:\\Users\Public\\Documents\\Intuit\\QuickBooks\\Company Files\\Scott Cote.qbw' }
-            return { ticketId, companyFilePath: '' }
+            return { ticketId, companyFilePath: 'C:\\Users\\Public\\Documents\\Intuit\\QuickBooks\\Company Files\\Scott Cote.qbw' }
         } else {
            throw new Error('Invalid username or password.');
         }
