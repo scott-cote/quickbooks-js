@@ -20,7 +20,13 @@ var qbXMLHandler = require('./qbXMLHandler');
 
 var port = process.env.QB_SOAP_PORT || 8000;
 
+server.listen(port, () => {
+    quickbooksServer.listen(server, '/wsdl', qbXMLHandler, () => {
+        console.log('Quickbooks SOAP Server listening!');
+    });
+});
+
 //server.listen(port);
-quickbooksServer.setQBXMLHandler(qbXMLHandler);
-quickbooksServer.run(server);
-server.listen(port);
+//quickbooksServer.setQBXMLHandler(qbXMLHandler);
+//quickbooksServer.run(server);
+//server.listen(port);
